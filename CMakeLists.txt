@@ -48,6 +48,9 @@ pico_enable_stdio_usb(AnassPad 1)
 target_link_libraries(AnassPad
         pico_stdlib)
 
+target_link_libraries(AnassPad
+        hardware_adc)
+
 # Add the standard include files to the build
 target_include_directories(AnassPad PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}

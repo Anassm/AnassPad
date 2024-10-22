@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
+#include "stdio.h"
 
 int main()
 {
@@ -15,13 +16,14 @@ int main()
         // Key 1
         adc_select_input(0);
         uint16_t result_key_1 = adc_read();
-        printf("ADC value: %d\n", result_key_1);
+        printf("ADC value key 1: %d\n", result_key_1);
 
         // Key 2
         adc_select_input(1);
         uint16_t result_key_2 = adc_read();
-        printf("ADC value: %d\n", result_key_2);
+        printf("ADC value key 2: %d\n", result_key_2);
+        printf("=======================================%d\n");
 
-        sleep_ms(250);
+        sleep_ms(200);
     }
 }
