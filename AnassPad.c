@@ -7,12 +7,24 @@
 #define KEY2_PIN 27
 #define SMA_SIZE 4
 #define WMA_SIZE 4
+#define KEY_AMOUNT 2
+
+// Configuration for each sensor
+struct config
+{
+    char name[20];    // Name of instance
+    int8_t actuation; // Actuation point in percentages
+    int8_t reset;     // Reset point in percentages
+    char trigger;     // HID key to trigger
+};
+struct config keyConfigs[KEY_AMOUNT];
 
 // Function declarations
 void init_gpio(void);
 uint16_t read_adc_key(uint input_channel);
 uint16_t SMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint32_t *current_sum, uint8_t *index);
 uint16_t WMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint8_t *index);
+uint8_t mapToPercentage(uint16_t filtered_value);
 
 // SMA data for each key
 uint16_t sma_buffer_key1[SMA_SIZE] = {0};
@@ -35,8 +47,7 @@ int main()
     // Initialize standard IO and GPIO
     stdio_init_all();
     init_gpio();
-
-    printf("Starting Raspberry Pi Pico Project\n");
+    init_keys_config();
 
     while (true)
     {
@@ -67,6 +78,12 @@ void init_gpio(void)
     adc_init();
     adc_gpio_init(KEY1_PIN);
     adc_gpio_init(KEY2_PIN);
+}
+
+void init_keys_config(void)
+{
+    keyConfigs[0] = (struct config){"Key1", 75, 65, "Z"};
+    keyConfigs[1] = (struct config){"Key2", 75, 65, "X"};
 }
 
 // Read ADC value for a given input channel
@@ -103,4 +120,8 @@ uint16_t WMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint8_t *index)
     *index = (*index + 1) % WMA_SIZE; // Update the buffer index to be circular
 
     return (uint16_t)(weighted_sum / weight_total);
+}
+
+uint8_t mapToPercentage(uint16_t filtered_value)
+{
 }

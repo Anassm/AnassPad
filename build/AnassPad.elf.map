@@ -1772,9 +1772,9 @@ Discarded input sections
  .text          0x00000000        0x0 CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/hardware_adc/adc.c.obj
  .data          0x00000000        0x0 CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/hardware_adc/adc.c.obj
  .bss           0x00000000        0x0 CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/hardware_adc/adc.c.obj
- .text          0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
- .data          0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
- .bss           0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
+ .text          0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
+ .data          0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
+ .bss           0x00000000        0x0 C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
  .data          0x00000000        0x0 C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .bss           0x00000000        0x0 C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .text          0x00000000        0x0 C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libg.a(libc_a-calloc.o)
@@ -2558,7 +2558,7 @@ LOAD C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/1
 .boot2          0x10000000      0x100
                 0x10000000                        __boot2_start__ = .
  *(.boot2)
- .boot2         0x10000000      0x100 C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
+ .boot2         0x10000000      0x100 C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
                 0x10000100                        __boot2_end__ = .
                 0x00000001                        ASSERT (((__boot2_end__ - __boot2_start__) == 0x100), ERROR: Pico second stage bootloader must be 256 bytes in size)
 
@@ -3854,7 +3854,7 @@ LOAD CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/lib/tinyusb/src/
 LOAD CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/lib/tinyusb/src/common/tusb_fifo.c.obj
 LOAD CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj
 LOAD CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/hardware_adc/adc.c.obj
-LOAD C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
+LOAD C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
 LOAD C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libstdc++.a
 LOAD C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libm.a
 START GROUP
@@ -3983,7 +3983,7 @@ LOAD linker stubs
  .ARM.attributes
                 0x000008aa       0x2c CMakeFiles/AnassPad.dir/C_/Users/anass/.pico-sdk/sdk/2.0.0/src/rp2_common/hardware_adc/adc.c.obj
  .ARM.attributes
-                0x000008d6       0x22 C:\Users\anass\AppData\Local\Temp\ccUM3r06.o
+                0x000008d6       0x22 C:\Users\anass\AppData\Local\Temp\ccEiOOxf.o
  .ARM.attributes
                 0x000008f8       0x1e C:/Users/anass/.pico-sdk/toolchain/13_2_Rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .ARM.attributes
