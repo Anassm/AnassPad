@@ -1,0 +1,25 @@
+Key Issue Encountered During Development
+----------------------------------------
+
+Setback Summary:
+While developing the key press logic, I encountered a significant issue that 
+cost almost a full day to debug. The hall sensors require properly calibrated 
+minimum and maximum values to convert keypresses into percentages (from 0 to 
+100% in this case). However, I noticed that the minimum value was unexpectedly 
+low, which prevented the system from recalibrating to a more accurate value 
+since the `current value` would never drop to this low threshold.
+
+Root Cause:
+After extensive debugging, I identified the root cause: the minimum value was 
+being set using a filtered value from the hall sensor, calculated with a Simple 
+Moving Average (SMA). During the very first cycle of the SMA, the buffer was 
+empty and had no initial values. Since the buffer size was 4, it initially 
+processed values like: 
+    [0, 0, <higher value>, <even higher value>]
+The average of these values was skewed lower due to the two zeros, setting the 
+minimum value to around 540—much lower than expected and out of range for the 
+`current value` to reach.
+
+Impact:
+This incorrect minimum value caused the calculated percentage values to hover 
+around 82% even when no keys were pressed, which was inaccurate and confusing.

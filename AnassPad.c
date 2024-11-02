@@ -12,23 +12,28 @@
 // Configuration for each sensor
 struct config
 {
-    char name[20];    // Name of instance
-    int8_t actuation; // Actuation point in percentages
-    int8_t reset;     // Reset point in percentages
-    char trigger;     // HID key to trigger
+    char name[20];         // Name of instance
+    int8_t actuation;      // Actuation point in percentages
+    int8_t reset;          // Reset point in percentages
+    int16_t min_value;     // Calibrated min value hall sensor can read
+    int16_t max_value;     // Calibrated max value hall sensor can read
+    int16_t current_value; // Current value
+    bool isPressed;        // Check if key is pressed
+    char trigger;          // HID key to trigger
 };
 struct config keyConfigs[KEY_AMOUNT];
 
 // Function declarations
 void init_gpio(void);
+void init_keys_config(void);
 uint16_t read_adc_key(uint input_channel);
 uint16_t SMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint32_t *current_sum, uint8_t *index);
 uint16_t WMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint8_t *index);
-uint8_t mapToPercentage(uint16_t filtered_value);
+uint8_t mapToPercentage(struct config *keyConfig);
 
-// SMA data for each key
-uint16_t sma_buffer_key1[SMA_SIZE] = {0};
-uint16_t sma_buffer_key2[SMA_SIZE] = {0};
+// SMA data for each key, prefilled with initial ADC readings
+uint16_t sma_buffer_key1[SMA_SIZE];
+uint16_t sma_buffer_key2[SMA_SIZE];
 uint32_t sma_sum_key1 = 0;
 uint32_t sma_sum_key2 = 0;
 uint8_t sma_index_key1 = 0;
@@ -51,20 +56,27 @@ int main()
 
     while (true)
     {
-        // Read and filter values for Key 1
-        uint16_t raw_key_1 = read_adc_key(0);
-        uint16_t SMA_key_1 = SMA_filter(raw_key_1, sma_buffer_key1, &sma_sum_key1, &sma_index_key1);
-        uint16_t WMA_key_1 = WMA_filter(raw_key_1, wma_buffer_key1, &wma_index_key1);
+        // Read, filter and convert values for Key 1
+        uint16_t raw_key_1 = read_adc_key(1);
+        keyConfigs[0].current_value = SMA_filter(raw_key_1, sma_buffer_key1, &sma_sum_key1, &sma_index_key1);
+        uint8_t percentage_SMA_key_1 = mapToPercentage(&keyConfigs[0]);
 
-        // Read and filter values for Key 2
-        uint16_t raw_key_2 = read_adc_key(1);
-        uint16_t SMA_key_2 = SMA_filter(raw_key_2, sma_buffer_key2, &sma_sum_key2, &sma_index_key2);
-        uint16_t WMA_key_2 = WMA_filter(raw_key_2, wma_buffer_key2, &wma_index_key2);
+        // Read, filter and convert values for Key 2
+        uint16_t raw_key_2 = read_adc_key(0);
+        keyConfigs[1].current_value = SMA_filter(raw_key_2, sma_buffer_key2, &sma_sum_key2, &sma_index_key2);
+        uint8_t percentage_SMA_key_2 = mapToPercentage(&keyConfigs[1]);
 
-        printf("Raw 1: %u, Simple 1: %u, Weighted 1: %u\n", raw_key_1, SMA_key_1, WMA_key_1);
-        printf("Raw 2: %u, Simple 2: %u, Weighted 2: %u\n", raw_key_2, SMA_key_2, WMA_key_2);
+        printf("\033[2J\033[H");
+        printf("Key1: Raw: %u | SMA: %u (%u%%) | Min: %u | Max: %u\n",
+               raw_key_1, keyConfigs[0].current_value, percentage_SMA_key_1,
+               keyConfigs[0].min_value, keyConfigs[0].max_value);
 
-        sleep_ms(250);
+        printf("Key2: Raw: %u | SMA: %u (%u%%) | Min: %u | Max: %u\n",
+               raw_key_2, keyConfigs[1].current_value, percentage_SMA_key_2,
+               keyConfigs[1].min_value, keyConfigs[1].max_value);
+
+        // sleep_ms(250);
+        sleep_ms(100);
     }
 
     return 0;
@@ -82,8 +94,32 @@ void init_gpio(void)
 
 void init_keys_config(void)
 {
-    keyConfigs[0] = (struct config){"Key1", 75, 65, "Z"};
-    keyConfigs[1] = (struct config){"Key2", 75, 65, "X"};
+    keyConfigs[0] = (struct config){"Key1", 75, 65, 2300, 2300, 2150, false, "Z"};
+    keyConfigs[1] = (struct config){"Key2", 75, 65, 2300, 2300, 2090, false, "X"};
+
+    // If both keys are being hold, the max value will be calibrated for once.
+    printf("Performing initial calibration...");
+
+    uint16_t initial_reading_key1 = read_adc_key(0);
+    uint16_t initial_reading_key2 = read_adc_key(1);
+
+    for (int i = 0; i < SMA_SIZE; i++)
+    {
+        sma_buffer_key1[i] = initial_reading_key1;
+        sma_sum_key1 += initial_reading_key1;
+
+        sma_buffer_key2[i] = initial_reading_key2;
+        sma_sum_key2 += initial_reading_key2;
+    }
+
+    for (int i = 0; i < KEY_AMOUNT; i++)
+    {
+        uint16_t initial_reading = read_adc_key(i);
+        if (initial_reading > keyConfigs[i].max_value)
+        {
+            keyConfigs[i].max_value = initial_reading;
+        }
+    }
 }
 
 // Read ADC value for a given input channel
@@ -122,6 +158,23 @@ uint16_t WMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint8_t *index)
     return (uint16_t)(weighted_sum / weight_total);
 }
 
-uint8_t mapToPercentage(uint16_t filtered_value)
+uint8_t mapToPercentage(struct config *keyConfig)
 {
+    // Update min and max based on filtered_value
+    if (keyConfig->min_value > keyConfig->current_value)
+    {
+        keyConfig->min_value = keyConfig->current_value; // Set new minimum
+    }
+    else if (keyConfig->max_value < keyConfig->current_value)
+    {
+        keyConfig->max_value = keyConfig->current_value; // Update maximum
+    }
+
+    // Only map if max is greater than min
+    if (keyConfig->max_value > keyConfig->min_value)
+    {
+        return (uint8_t)(((keyConfig->current_value - keyConfig->min_value) * 100) / (keyConfig->max_value - keyConfig->min_value));
+    }
+
+    return 0; // Return 0 if no valid range is available
 }
