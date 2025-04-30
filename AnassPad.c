@@ -1,12 +1,16 @@
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
 #include "stdio.h"
+// #include "tusb.h"
+// #include "tusb.config.h"
 
-// Define constants for GPIO pins and SMA settings
+// Define constants for GPIO pins and SMA settings + more
 #define KEY1_PIN 26
 #define KEY2_PIN 27
-#define SMA_SIZE 4
+#define SMA_SIZE 20
 #define KEY_AMOUNT 2
+#define KEY_Z 0x15
+#define KEY_X 0x1D
 
 // Configuration for each sensor
 struct config
@@ -48,9 +52,12 @@ int main()
     stdio_init_all();
     init_gpio();
     init_keys_config();
+    // tusb_init();
 
     while (true)
     {
+        // tud_task();
+
         // Key 1
         uint16_t value_key1 = SMA_filter(read_adc_key(1), sma_buffer_key1, &sma_sum_key1, &sma_index_key1);
         calibrate_min_max(&keyConfigs[0], value_key1);
@@ -81,17 +88,17 @@ int main()
         }
 
         // Debugging
-        printf("Key: %s | Trigger: %c | Raw ADC Value: %d | Percentage: %d%% | Actuation: %d | Reset: %d | State: %s\n",
-               keyConfigs[0].name, keyConfigs[0].trigger, value_key1, keyConfigs[0].value,
-               keyConfigs[0].actuation, keyConfigs[0].reset,
-               keyConfigs[0].is_pressed ? "PRESSED" : "RELEASED");
+        // printf("Key: %s | Trigger: %c | Raw ADC Value: %d | Percentage: %d%% | Actuation: %d | Reset: %d | State: %s\n",
+        //        keyConfigs[0].name, keyConfigs[0].trigger, value_key1, keyConfigs[0].value,
+        //        keyConfigs[0].actuation, keyConfigs[0].reset,
+        //        keyConfigs[0].is_pressed ? "PRESSED" : "RELEASED");
 
-        printf("Key: %s | Trigger: %c | Raw ADC Value: %d | Percentage: %d%% | Actuation: %d | Reset: %d | State: %s\n",
-               keyConfigs[1].name, keyConfigs[1].trigger, value_key2, keyConfigs[1].value,
-               keyConfigs[1].actuation, keyConfigs[1].reset,
-               keyConfigs[1].is_pressed ? "PRESSED" : "RELEASED");
+        // printf("Key: %s | Trigger: %c | Raw ADC Value: %d | Percentage: %d%% | Actuation: %d | Reset: %d | State: %s\n",
+        //        keyConfigs[1].name, keyConfigs[1].trigger, value_key2, keyConfigs[1].value,
+        //        keyConfigs[1].actuation, keyConfigs[1].reset,
+        //        keyConfigs[1].is_pressed ? "PRESSED" : "RELEASED");
 
-        sleep_ms(250);
+        // sleep_ms(100);
     }
 
     return 0;
@@ -109,8 +116,8 @@ void init_gpio(void)
 void init_keys_config(void)
 {
     // Initialize key configurations
-    keyConfigs[0] = (struct config){1, "Key1", false, 75, 60, 2300, 2500, 2350, 'Z'};
-    keyConfigs[1] = (struct config){2, "Key2", false, 75, 60, 2300, 2500, 2350, 'X'};
+    keyConfigs[0] = (struct config){1, "Key1", false, 75, 60, 2300, 2300, 2350, 'Z'};
+    keyConfigs[1] = (struct config){2, "Key2", false, 75, 60, 2300, 2300, 2350, 'X'};
 
     printf("Performing initial calibration...");
     uint16_t initial_reading_key1 = read_adc_key(0);
@@ -177,26 +184,28 @@ uint16_t SMA_filter(uint16_t unfiltered_value, uint16_t *buffer, uint32_t *curre
 
 void key_press(int8_t key_id)
 {
-    for (int8_t i = 0; i < KEY_AMOUNT; i++)
+    uint8_t key_to_press;
+
+    if (key_id == 0)
     {
-        if (keyConfigs[i].id == key_id)
-        {
-            keyConfigs[i].is_pressed = true;
-            printf("%c, PRESSED\n", keyConfigs[i].trigger);
-            return;
-        }
+        key_to_press = KEY_Z;
     }
+    else if (key_id == 1)
+    {
+        key_to_press = KEY_X;
+    }
+
+    keyConfigs[key_id].is_pressed = true;
+
+    // tud_hid_keyboard_report(0, 0, key_to_press);
+
+    printf("%c, PRESSED\n", keyConfigs[key_id].trigger);
+    return;
 }
 
 void key_release(int8_t key_id)
 {
-    for (int8_t i = 0; i < KEY_AMOUNT; i++)
-    {
-        if (keyConfigs[i].id == key_id)
-        {
-            keyConfigs[i].is_pressed = false;
-            printf("%c, RELEASED\n", keyConfigs[i].trigger);
-            return;
-        }
-    }
+    keyConfigs[key_id].is_pressed = false;
+    printf("%c, RELEASED\n", keyConfigs[key_id].trigger);
+    return;
 }
